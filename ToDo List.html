@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>checkList</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: sans-serif;
+        background-color: #5b5b5b;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        max-width: 100%;
+      }
+
+      input {
+        font-size: 30px;
+        margin: 3em 0 1em 0;
+        outline: none;
+        padding: 15px;
+        width: 50%;
+        border-radius: 5px;
+        border: none;
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8);
+        transition: box-shadow 0.5s ease-in-out;
+      }
+
+      input:hover {
+        box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.4);
+        transition: box-shadow 0.5s ease-in-out;
+      }
+
+      ol {
+        width: 50%;
+      }
+
+      li {
+        list-style-type: decimal;
+        color: rgba(255, 255, 255, 1);
+        font-size: 30px;
+        margin: 1em;
+        padding-left: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .liChecked {
+        text-decoration: line-through;
+        color: rgb(196, 196, 196);
+      }
+
+      span {
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      img {
+        width: 25px;
+        height: 25px;
+        margin-left: 10px;
+        cursor: pointer;
+      }
+
+      .wrapper {
+        padding: 1em;
+        border-radius: 5px;
+        border: 1px solid #fff;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+        height: 100px;
+        width: 250px;
+        background-color: #3e3f4489;
+        padding: 2em;
+        position: absolute;
+        z-index: 9999;
+        user-select: none;
+      }
+
+      .buttonsWrapper {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+      }
+
+      .yes {
+        margin: 0;
+        width: 6.5em;
+        height: 2.5em;
+        border: none;
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        box-shadow: 0 0 2px rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .no {
+        margin: 0;
+        width: 6.5em;
+        height: 2.5em;
+        border: none;
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        box-shadow: 0 0 2px rgba(255, 255, 255, 0.9);
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
+      }
+
+      .remove {
+        opacity: 0;
+        transition: all 1s ease-in-out;
+      }
+
+      .question {
+        margin-bottom: 1em;
+        font-size: 23px;
+        text-align: center;
+        color: #fff;
+      }
+
+      .visible {
+        opacity: 1;
+        transition: all 0.5s ease-in-out;
+      }
+
+      .unvisible {
+        opacity: 0;
+        transition: all 0.5s ease-in-out;
+      }
+
+      .buttonHover {
+        background-color: rgba(255, 255, 255, 0.8) !important;
+        box-shadow: 0 1px 2px rgba(255, 255, 255, 0.4) !important;
+        transition: all 0.3s ease-in-out !important;
+        color: rgba(0, 0, 0, 0.8) !important;
+      }
+
+      .messageWrapper {
+        position: absolute;
+        top: 4.5em;
+        opacity: 1;
+        text-align: center;
+        font-size: 40px;
+        transition: opacity 1s ease-in-out;
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .messageWrapperUnvis {
+        position: absolute;
+        top: 4.5em;
+        opacity: 0;
+        text-align: center;
+        font-size: 40px;
+        transition: opacity 1s ease-in-out;
+        color: rgba(255, 255, 255, 0.5);
+      }
+    </style>
+  </head>
+  <body>
+    <input type="text" id="input" />
+    <ol id="list"></ol>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const yes = document.createElement("button");
+
+        const showMessage = () => {
+          const messageWrapper = document.createElement("div");
+          const message = document.createElement("p");
+
+          message.innerText =
+            "Чтобы очистить список, нажмите правую кнопку мыши";
+          messageWrapper.classList.add("messageWrapper");
+
+          setTimeout(() => {
+            document.body.appendChild(messageWrapper);
+            messageWrapper.appendChild(message);
+            messageWrapper.classList.add("messageWrapperUnvis");
+            setTimeout(() => {
+              messageWrapper.classList.remove("messageWrapperUnvis");
+            }, 100);
+          }, 100);
+
+          setTimeout(() => {
+            messageWrapper.classList.add("messageWrapperUnvis");
+            setTimeout(() => {
+              messageWrapper.remove();
+            }, 1000);
+          }, 2500);
+        };
+
+        const modalWindow = () => {
+          document.addEventListener("contextmenu", (e) => {
+            const wrapper = document.createElement("div");
+            const buttonsWrapper = document.createElement("div");
+            const question = document.createElement("p");
+            const yes = document.createElement("button");
+            const no = document.createElement("button");
+            let currentDiv = null;
+            e.preventDefault();
+
+            if (e.target.matches("#input")) {
+              wrapper.remove();
+              return;
+            }
+
+            document.addEventListener("contextmenu", () => {
+              if (currentDiv) {
+                currentDiv.remove();
+              }
+            });
+            document.addEventListener("click", (e) => {
+              if (currentDiv && !currentDiv.contains(e.target)) {
+                currentDiv.remove();
+              }
+            });
+
+            question.innerText = "Очистить список?";
+            yes.innerText = "Да";
+            no.innerText = "Нет";
+
+            wrapper.classList.add("wrapper");
+            buttonsWrapper.classList.add("buttonsWrapper");
+            question.classList.add("question");
+            yes.classList.add("yes");
+            no.classList.add("no");
+
+            yes.addEventListener("mouseenter", () => {
+              yes.classList.toggle("buttonHover");
+            });
+            yes.addEventListener("mouseleave", () => {
+              yes.classList.remove("buttonHover");
+            });
+            no.addEventListener("mouseenter", () => {
+              no.classList.add("buttonHover");
+            });
+            no.addEventListener("mouseleave", () => {
+              no.classList.remove("buttonHover");
+            });
+
+            currentDiv = wrapper;
+            wrapper.appendChild(question);
+            wrapper.appendChild(buttonsWrapper);
+            buttonsWrapper.appendChild(yes);
+            buttonsWrapper.appendChild(no);
+            document.body.appendChild(wrapper);
+            wrapper.style.left = e.clientX + 7 + "px";
+            wrapper.style.top = e.clientY + 15 + "px";
+
+            yes.addEventListener("click", (e) => {
+              if (currentDiv) {
+                currentDiv.remove();
+                yes.classList.remove("buttonHover");
+              }
+            });
+            no.addEventListener("click", (e) => {
+              if (currentDiv) {
+                currentDiv.remove();
+                no.classList.remove("buttonHover");
+              }
+            });
+          });
+        };
+
+        const addNewItem = () => {
+          const input = document.querySelector("#input");
+          const list = document.querySelector("#list");
+
+          input.addEventListener("keypress", (e) => {
+            const nListItem = document.createElement("li");
+            const remove = document.createElement("span");
+
+            yes.addEventListener("click", () => {
+              nListItem.classList.add("unvisible");
+              setTimeout(() => {
+                list.innerHTML = "";
+              }, 600);
+            });
+
+            if (e.key === "Enter") {
+              if (input.value !== "") {
+                nListItem.innerText = input.value;
+                remove.innerHTML = '<img src="trash1.png" alt="">';
+                remove.classList.add("unvisible");
+                nListItem.appendChild(remove);
+                list.appendChild(nListItem);
+                input.value = "";
+              }
+            }
+
+            remove.addEventListener("click", (e) => {
+              nListItem.classList.add("remove");
+              e.stopImmediatePropagation();
+              setTimeout(() => {
+                nListItem.remove();
+              }, 1000);
+            });
+
+            nListItem.addEventListener("mouseenter", () => {
+              remove.classList.add("visible");
+              remove.classList.remove("unvisible");
+            });
+            nListItem.addEventListener("mouseleave", () => {
+              remove.classList.remove("visible");
+              remove.classList.add("unvisible");
+            });
+
+            let isClicked = false;
+            nListItem.addEventListener("click", () => {
+              if (!isClicked) {
+                list.insertBefore(nListItem, list.firstChild);
+                nListItem.classList.add("liChecked");
+                isClicked = true;
+              } else {
+                nListItem.classList.remove("liChecked");
+                isClicked = false;
+              }
+            });
+
+            list.addEventListener("click", (e) => {
+              if (e.target.tagName === "LI") {
+                setTimeout(() => {
+                  list.appendChild(e.target);
+                }, 500);
+              }
+            });
+          });
+        };
+
+        const setup = () => {
+          setTimeout(() => {
+            showMessage();
+          }, 1000);
+          modalWindow();
+          addNewItem();
+        };
+        setup();
+      });
+    </script>
+  </body>
+</html>
